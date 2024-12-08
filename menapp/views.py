@@ -11,16 +11,18 @@ from rest_framework.response import Response
 
 class MenAPIView(APIView):
     def get(self, request):  # Метод отвечающий за обработку get запросов
-        lst = Men.objects.all().values()  # Получаем список всех записей из БД Men c помощью values
-        return Response({'posts': list(lst)})  # Возвращаем список всех записей с ключем posts
+        m = Men.objects.all()  # Получаем список всех записей из БД Men как queryset
+        return Response({'posts': MenSerializer(m, many=True).data})  # Передаем на вход сериализатора весь queryset. Параметр many т.к. у нас список а не одно значение 
 
     def post(self, request):  # Метод отвечающий за обработку post запросов
+        serializer = MenSerializer(data=request.data)  # Помещаем принятые данные в объект сериализатора
+        serializer.is_valid(raise_exception=True)  # Проверяем корректность принятых данных согласно тому что прописано в serializers.py
         post_new = Men.objects.create(
             title = request.data['title'],
             content = request.data['content'],
-            cat_id = request.data['cat_id'],
+            cat_id = request.data['cat_id']
         )
-        return Response({'post': model_to_dict(post_new)})  # Вернем наши добавленные данные, преобразовав из в словарь
+        return Response({'post': MenSerializer(post_new).data})  # Вернем наши добавленные данные
 
 
 # class MenAPIView(generics.ListAPIView):
