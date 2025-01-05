@@ -55,3 +55,35 @@ class MenAPIView(APIView):
         return Response({'post': MenSerializer(post_new).data})  # Вернем наши добавленные данные
 
 **********************************************************************************************************
+Дописали методы создания и изменения в сериализаторе
+
+    def create(self, validated_data):
+        return Men.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.content = validated_data.get('content', instance.content)
+        instance.time_update = validated_data.get('time_update', instance.time_update)
+        instance.is_published = validated_data.get('is_published', instance.is_published)
+        instance.cat_id = validated_data.get('cat_id', instance.cat_id)
+        instance.save()
+        return instance
+
+Дописали эти метод для изменения записи в views
+    
+    def put(self, request, *args, **kwargs):  # Метод отвечающий за обработку put запросов
+        pk = kwargs.get('pk', None)  # Получаем id записи
+        if not pk:  # Если id не передан
+            return Response({'Ошибка': 'Метод PUT не может быть выполнен'})  # Возвращаем ошибку
+        try:
+            instance = Men.objects.get(pk=pk)  # Получаем запись по id
+        except:
+            return Response({'Ошибка': 'Объект не существует'})  # Если запись не найдена возвращаем ошибку
+        
+        serializer = MenSerializer(data=request.data, instance=instance)  # Помещаем принятые данные в объект сериализатора
+        serializer.is_valid(raise_exception=True)  # Проверяем корректность принятых данных согласно тому что прописано в serializers.py
+        serializer.save()  # Сохраняем данные. Автоматически вызовется метод Update из сериализатора
+        return Response({'post': serializer.data})  # Вернем наши добавленные данные
+
+Создали новый маршрут в urls
+    path('api/v1/menlist/<int:pk>/', MenAPIView.as_view()),

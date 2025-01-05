@@ -1,3 +1,4 @@
+from django.core.serializers import serialize
 from django.forms import model_to_dict
 from django.shortcuts import render
 
@@ -18,7 +19,20 @@ class MenAPIView(APIView):
         serializer = MenSerializer(data=request.data)  # Помещаем принятые данные в объект сериализатора
         serializer.is_valid(raise_exception=True)  # Проверяем корректность принятых данных согласно тому что прописано в serializers.py
         serializer.save()  # Сохраняем данные. Автоматически вызовется метод Create из сериализатора
-
+        return Response({'post': serializer.data})  # Вернем наши добавленные данные
+    
+    def put(self, request, *args, **kwargs):  # Метод отвечающий за обработку put запросов
+        pk = kwargs.get('pk', None)  # Получаем id записи
+        if not pk:  # Если id не передан
+            return Response({'Ошибка': 'Метод PUT не может быть выполнен'})  # Возвращаем ошибку
+        try:
+            instance = Men.objects.get(pk=pk)  # Получаем запись по id
+        except:
+            return Response({'Ошибка': 'Объект не существует'})  # Если запись не найдена возвращаем ошибку
+        
+        serializer = MenSerializer(data=request.data, instance=instance)  # Помещаем принятые данные в объект сериализатора
+        serializer.is_valid(raise_exception=True)  # Проверяем корректность принятых данных согласно тому что прописано в serializers.py
+        serializer.save()  # Сохраняем данные. Автоматически вызовется метод Update из сериализатора
         return Response({'post': serializer.data})  # Вернем наши добавленные данные
 
 
