@@ -6,7 +6,7 @@ from rest_framework import routers
 
 
 router = routers.DefaultRouter()  # Создаем объект роутера для работы с маршрутами
-router.register(r'men', MenViewSet)  # Регистрируем в нем наш класс вьюсета MenViewSet
+router.register(r'men', MenViewSet, basename='men')  # Регистрируем в нем наш класс вьюсета MenViewSet. basename='men' - название маршрута. Он обязателен если мы удаляем стандартную переменную queryset из нашего вьюсета
 
 urlpatterns = [
     path('admin/', admin.site.urls),
