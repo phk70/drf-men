@@ -10,7 +10,11 @@ from rest_framework.response import Response
 
 
 
-class MenAPIView(APIView):
+class MenAPIList(generics.ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи) и post запросов (добавлениие записей в БД)
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
+
+class MenAPIView(APIView):  # Класс со всеми методами
     def get(self, request):  # Метод отвечающий за обработку get запросов
         m = Men.objects.all()  # Получаем список всех записей из БД Men как queryset
         return Response({'posts': MenSerializer(m, many=True).data})  # Передаем на вход сериализатора весь queryset. Параметр many т.к. у нас список а не одно значение 

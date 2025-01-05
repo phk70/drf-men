@@ -105,3 +105,46 @@ class MenAPIView(APIView):
 
 
 VIEWS отвечает только за обработку запросов. А СЕРИАЛИЗАТОР отвечает за обработку данных
+
+**********************************************************************************************************
+
+6. Переписали сериалайзер с использованием наследования от ModelSerializer и вложенным классом Meta
+
+class MenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Men
+        fields = ('id', 'title', 'content', 'time_create', 'time_update', 'is_published', 'cat')
+
+
+Так же существуют и базовые классы для представлений
+CreateAPIView - создание данных по ПОСТ запросу
+ListAPIView - чтение списка данных по ГЕТ запросу
+RetrieveAPIView - чтение конкретных данныхпо ГЕТ запросу
+DestroyAPIView - удаление по ДЕЛИТ запросу
+UpdateAPIView - изменение записей по ПУТ или ПАТЧ запросу
+ListCreateAPIView - чтение по ГЕТ и создание списка по ПОСТ
+RetrieveUpdeteAPIView - чтение и изменение отдельной записи по ГЕТ
+RetrieveDestroyAPIView - чтение по ГЕТ и удаление по ДЕЛИТ 
+RetrieveUpdeteDestroyAPIView - чтоние, изменение и добавление данных по ГЕТ, ПУТ, ПАТЧ и ДЕЛИТ
+
+
+Перепишем методы GET и POST из нашего текущего класса в новый класс MenAPIList
+
+from rest_framework import generics
+
+class MenAPIList(generics.ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи) и post запросов (добавлениие записей в БД)
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
+
+Идобавим его в маршруты
+
+from menapp.views import MenAPIView, MenAPIList
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/v1/menlist/', MenAPIList.as_view()),
+    path('api/v1/menlist/<int:pk>/', MenAPIList.as_view()),
+]
+
+теперь на сайте все так же будут отображаться все записи, а так же внизу появится возможность через форму добавлять записи 
