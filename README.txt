@@ -130,9 +130,10 @@ RetrieveUpdeteDestroyAPIView - чтоние, изменение и добавл�
 
 Перепишем методы GET и POST из нашего текущего класса в новый класс MenAPIList
 
-from rest_framework import generics
+from rest_framework.generics import ListCreateAPIView 
 
-class MenAPIList(generics.ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи) и post запросов (добавлениие записей в БД)
+
+class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи) и post запросов (добавлениие записей в БД)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
 
@@ -148,3 +149,51 @@ urlpatterns = [
 ]
 
 теперь на сайте все так же будут отображаться все записи, а так же внизу появится возможность через форму добавлять записи 
+
+**********************************************************************************************************
+
+7. Удалим ранее созданный класс в View с его методами и создадим новый класс отвечающий за изменение записей на основе базового класса
+
+from rest_framework.generics import ListCreateAPIView, UpdateAPIView
+
+
+class MenAPIUpdate(UpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+
+Изменим маршрут 
+
+from menapp.views import MenAPIList, MenAPIUpdate
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/v1/menlist/', MenAPIList.as_view()),
+    path('api/v1/menlist/<int:pk>/', MenAPIUpdate.as_view()),
+]
+
+
+Так же добавим еще класс для просмотра/изменения и удаления данных.
+
+
+from rest_framework.generics import ListCreateAPIView, UpdateAPIView, RetrieveUpdateDestroyAPIView
+
+
+class MenAPIDetailView(RetrieveUpdateDestroyAPIView):  # Класс отвечающий за обработку get, post, patch и delete запросов
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer
+
+И новый маршрут для нашего
+
+
+from menapp.views import MenAPIList, MenAPIUpdate, MenAPIDetailView
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/v1/menlist/', MenAPIList.as_view()),
+    path('api/v1/menlist/<int:pk>/', MenAPIUpdate.as_view()),
+    path('api/v1/mendetail/<int:pk>/', MenAPIDetailView.as_view()),
+]
+
+Теперь с использованием этого класса мы можем смотреть конкретную запись, изменять ее и удалить
