@@ -197,3 +197,17 @@ urlpatterns = [
 ]
 
 Теперь с использованием этого класса мы можем смотреть конкретную запись, изменять ее и удалить
+
+
+
+
+Добавили коллекцию REST_FRAMEWORK в файл settings для отключения режима при релизе продукта (пока только прописал, но закоментировал)
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',  # Определяет что работаем с JSON
+        'rest_framework.renderers.BrowsableAPIRenderer',  # Подключаем работу с данными через браузер
+    ]
+}
+
+Именно строчку 'rest_framework.renderers.BrowsableAPIRenderer' нужно закоментировать перед релизом, чтобы пользователь не мог удалять и изменять данные через браузер
