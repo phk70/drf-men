@@ -336,3 +336,61 @@ def get_queryset(self):
             return Men.objects.all()[:3]  # Возвращаем список из трех первых записей из БД    
             
         return Men.objects.filter(pk=pk)  # Возвращаем запись отфильрованную по id
+
+
+
+
+**********************************************************************************************************
+
+10. Ограничения доступа (permissions)
+
+Добавим в нашу модель дополнительное поле, которое будет хранить идентификатор пользователя
+
+from django.contrib.auth.models import RetrieveUpdateDestroyAPIView
+
+......
+user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
+
+
+Проводим мграции и в базе данных появляется новое поле связанное с юзером
+
+
+
+
+Возвращаем классы с методами вместо вьюсета для наглядности разграничения прав
+
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView 
+
+
+class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи)
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
+
+
+class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+
+
+class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий за delete запросы
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+
+
+
+
+Маршруты так же возвращаем.
+
+
+from menapp.views import MenAPIList, MenAPIUpdate, MenAPIDestroy
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/v1/men/', MenAPIList.as_view()),  #  Маршрут для отображения всех записей
+    path('api/v1/men/<int:pk>/', MenAPIUpdate.as_view()),  # Маршрут для изменения записей по идентификатору
+    path('api/v1/mendelete/<int:pk>/', MenAPIDestroy.as_view()),  # Маршрут для удаления записей по идентификатору      
+]
+
+
+
