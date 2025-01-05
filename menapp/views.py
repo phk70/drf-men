@@ -17,12 +17,9 @@ class MenAPIView(APIView):
     def post(self, request):  # Метод отвечающий за обработку post запросов
         serializer = MenSerializer(data=request.data)  # Помещаем принятые данные в объект сериализатора
         serializer.is_valid(raise_exception=True)  # Проверяем корректность принятых данных согласно тому что прописано в serializers.py
-        post_new = Men.objects.create(
-            title = request.data['title'],
-            content = request.data['content'],
-            cat_id = request.data['cat_id']
-        )
-        return Response({'post': MenSerializer(post_new).data})  # Вернем наши добавленные данные
+        serializer.save()  # Сохраняем данные. Автоматически вызовется метод Create из сериализатора
+
+        return Response({'post': serializer.data})  # Вернем наши добавленные данные
 
 
 # class MenAPIView(generics.ListAPIView):

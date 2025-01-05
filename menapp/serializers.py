@@ -18,6 +18,8 @@ class MenSerializer(serializers.Serializer):
     is_published = serializers.BooleanField(default=True)
     cat_id = serializers.IntegerField()
 
+    def create(self, validated_data):
+        return Men.objects.create(**validated_data)
 
 # # Для примера работы сериалайзера
 # def encode():
