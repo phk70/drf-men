@@ -1,20 +1,21 @@
-from django.core.serializers import serialize
-from django.forms import model_to_dict
-from django.shortcuts import render
+from django.core.serializers import serialize  # Импортируем функцию serialize для преобразования модели в json
+from django.forms import model_to_dict  # Импортируем функцию model_to_dict 
+from django.shortcuts import render  # Импортируем функцию render 
 
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView 
-from .models import Men, Category
-from .serializers import MenSerializer
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response  # Импортируем функцию Response для
+from rest_framework.viewsets import ModelViewSet  # Импортируем класс ModelViewSet
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView  # Импортируем функции для работы с сериализаторами  
+from .models import Men, Category  # Импортируем модели из файла models
+from .serializers import MenSerializer  # Импортируем сериализатор из файла serializers
+from .permissions import IsAdminOrReadOnly  # Импортируем самописные права из файла permissions
+from rest_framework.decorators import action  # Импортируем декоратор action для работы с дополнительными маршрутами
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser  # Импортируем дополнительные права для работы с дополнительными маршрутами
 
 
 class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
-    permission_classes: tuple = (IsAuthenticatedOrReadOnly,)  # Добавляем права IsAuthenticatedOrReadOnly  
+    permission_classes= (IsAuthenticatedOrReadOnly, )  # Добавляем права IsAuthenticatedOrReadOnly  
 
 
 class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
@@ -25,6 +26,7 @@ class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий з
 class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий за delete запросы
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+    permission_classes = (IsAdminOrReadOnly, )  # Добавляем самописные права IsAdminOrReadOnly
 
 
 

@@ -110,6 +110,7 @@ VIEWS отвечает только за обработку запросов. А
 
 6. Переписали сериалайзер с использованием наследования от ModelSerializer и вложенным классом Meta
 
+
 class MenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Men
@@ -130,8 +131,8 @@ RetrieveUpdeteDestroyAPIView - чтоние, изменение и добавл�
 
 Перепишем методы GET и POST из нашего текущего класса в новый класс MenAPIList
 
-from rest_framework.generics import ListCreateAPIView 
 
+from rest_framework.generics import ListCreateAPIView 
 
 class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи) и post запросов (добавлениие записей в БД)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
@@ -139,8 +140,8 @@ class MenAPIList(ListCreateAPIView):  # Класс отвечающий за о�
 
 Идобавим его в маршруты
 
-from menapp.views import MenAPIView, MenAPIList
 
+from menapp.views import MenAPIView, MenAPIList
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -154,8 +155,8 @@ urlpatterns = [
 
 7. Удалим ранее созданный класс в View с его методами и создадим новый класс отвечающий за изменение записей на основе базового класса
 
-from rest_framework.generics import ListCreateAPIView, UpdateAPIView
 
+from rest_framework.generics import ListCreateAPIView, UpdateAPIView
 
 class MenAPIUpdate(UpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
@@ -163,8 +164,8 @@ class MenAPIUpdate(UpdateAPIView):  # Класс отвечающий за об�
 
 Изменим маршрут 
 
-from menapp.views import MenAPIList, MenAPIUpdate
 
+from menapp.views import MenAPIList, MenAPIUpdate
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -177,7 +178,6 @@ urlpatterns = [
 
 
 from rest_framework.generics import ListCreateAPIView, UpdateAPIView, RetrieveUpdateDestroyAPIView
-
 
 class MenAPIDetailView(RetrieveUpdateDestroyAPIView):  # Класс отвечающий за обработку get, post, patch и delete запросов
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
@@ -232,7 +232,6 @@ ReadOnlyModelViewSet - только чтение
 
 from rest_framework.viewsets import ModelViewSet
 
-
 class MenViewSet(ModelViewSet):  # Класс отвечающий за обработку get, post, patch и delete на основе базового класса ModelViewSet
     queryset = Men.objects.all()  # Получаем список всех записей из БД
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
@@ -240,8 +239,8 @@ class MenViewSet(ModelViewSet):  # Класс отвечающий за обра
 
 В путях так же меняем 
 
-from menapp.views import MenViewSet
 
+from menapp.views import MenViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -287,7 +286,6 @@ DefauilRouter
 
 from rest_framework.response import Response
 from rest_framework.decorators import action
-
 
 class MenViewSet(ModelViewSet):  # Класс отвечающий за обработку get, post, patch и delete на основе базового класса ModelViewSet
     queryset = Men.objects.all()  # Получаем список всех записей из БД
@@ -367,8 +365,8 @@ user = models.ForeignKey(User, verbose_name='Пользователь', on_delet
 
 Возвращаем классы с методами вместо вьюсета для наглядности разграничения прав
 
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView 
 
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView 
 
 class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи) и post запросов
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
@@ -392,7 +390,6 @@ class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий 
 
 from menapp.views import MenAPIList, MenAPIUpdate, MenAPIDestroy
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/men/', MenAPIList.as_view()),  #  Маршрут для отображения всех записей
@@ -409,7 +406,6 @@ urlpatterns = [
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-
 class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
@@ -424,3 +420,36 @@ class MenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Men
         fields = '__all__'  # Выводим все поля
+
+
+Для класса MenAPIDestroy установим права IsAdminUser чтобы удалять записи мог только администратор
+
+class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий за delete запросы
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+    permission_classes = (IsAdminUser, )  # Добавляем права IsAdminUser
+
+
+Но при этом без права админа мы даже и просмотреть не можем запись. Для этого нужно написать кастомные права.
+
+Создаем в папке приложения файл permissions.py в нем будут все самописные права.
+
+
+from rest_framework import permissions
+
+class IsAdminOrReadOnly(permissions.BasePermission):  # Наследуем от базового класса BasePermission
+    def has_permission(self, request, view):  # И переопределяем его базовый метод has_permission
+        if request.method in permissions.SAFE_METHODS:  # SAFE_METHODS = GET, HEAD, OPTIONS
+            return True  # True - разрешено. Даем доступ всем
+
+        return bool(request.user and request.user.is_staff)  # Если не SAFE_METHODS, то только для админа
+
+
+И Теперь мы можем применить самописные права для наших представлений
+
+from .permissions import IsAdminOrReadOnly
+
+class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий за delete запросы
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+    permission_classes = (IsAdminOrReadOnly, )  # Добавляем самописные права IsAdminOrReadOnly
