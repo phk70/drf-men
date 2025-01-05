@@ -92,5 +92,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',  # Определяет что работаем с JSON
         'rest_framework.renderers.BrowsableAPIRenderer',  # Подключаем работу с данными через браузер
-    ]
+    ],
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]    
 }

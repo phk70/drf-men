@@ -445,7 +445,17 @@ class IsAdminOrReadOnly(permissions.BasePermission):  # Наследуем от 
         return bool(request.user and request.user.is_staff)  # Если не SAFE_METHODS, то только для админа
 
 
+class IsOwnerOrReadOnly(permissions.BasePermission):  # Наследуем от базового класса BasePermission
+    def has_object_permission(self, request, view, obj):  # И переопределяем его базовый метод has_object_permission
+        if request.method in permissions.SAFE_METHODS:  # SAFE_METHODS = GET, HEAD, OPTIONS
+            return True  # True - разрешено. Даем доступ всем
+
+        return obj.user == request.user  # Если автор записи == текущему юзеру, то тоже возвращаем True и даем доступ
+
+
+
 И Теперь мы можем применить самописные права для наших представлений
+
 
 from .permissions import IsAdminOrReadOnly
 
@@ -453,3 +463,25 @@ class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий 
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
     permission_classes = (IsAdminOrReadOnly, )  # Добавляем самописные права IsAdminOrReadOnly
+
+
+class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+    permission_classes = (IsAdminOrReadOnly, )  # Добавляем самописные права IsAdminOrReadOnly
+
+
+
+Так же в SETTINGS можем дефолтно определить какие права будут для всех сразу.
+Поставим доступ только авторизованным пользователям:
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',  # Определяет что работаем с JSON
+        'rest_framework.renderers.BrowsableAPIRenderer',  # Подключаем работу с данными через браузер
+    ],
+    
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]    
+}

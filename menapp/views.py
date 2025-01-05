@@ -7,7 +7,7 @@ from rest_framework.viewsets import ModelViewSet  # Импортируем кл�
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView  # Импортируем функции для работы с сериализаторами  
 from .models import Men, Category  # Импортируем модели из файла models
 from .serializers import MenSerializer  # Импортируем сериализатор из файла serializers
-from .permissions import IsAdminOrReadOnly  # Импортируем самописные права из файла permissions
+from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly  # Импортируем самописные права из файла permissions
 from rest_framework.decorators import action  # Импортируем декоратор action для работы с дополнительными маршрутами
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser  # Импортируем дополнительные права для работы с дополнительными маршрутами
 
@@ -21,12 +21,13 @@ class MenAPIList(ListCreateAPIView):  # Класс отвечающий за о�
 class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+    permission_classes = (IsAdminOrReadOnly, )  # Добавляем самописные права IsAdminOrReadOnly
 
 
 class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий за delete запросы
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
-    permission_classes = (IsAdminOrReadOnly, )  # Добавляем самописные права IsAdminOrReadOnly
+    permission_classes = (IsOwnerOrReadOnly, )  # Добавляем самописные права IsOwnerOrReadOnly
 
 
 
