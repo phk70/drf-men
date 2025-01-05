@@ -211,3 +211,44 @@ REST_FRAMEWORK = {
 }
 
 Именно строчку 'rest_framework.renderers.BrowsableAPIRenderer' нужно закоментировать перед релизом, чтобы пользователь не мог удалять и изменять данные через браузер
+
+
+**********************************************************************************************************
+
+8. Сейчас у нас во всех классах дуюлируются строки 
+queryset = Men.objects.all()
+serializer_class = MenSerializer
+
+Чтобы это исправить используем ViewSets
+
+Их существует не много:
+ViewSet
+GenericSet
+ModelViewSet
+ReadOnlyModelViewSet
+
+Используем ModelViewSet т.к. наше представление работает с моделями
+
+
+from rest_framework.viewsets import ModelViewSet
+
+
+class MenViewSet(ModelViewSet):  # Класс отвечающий за обработку get, post, patch и delete на основе базового класса ModelViewSet
+    queryset = Men.objects.all()  # Получаем список всех записей из БД
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+
+
+В путях так же меняем 
+
+from menapp.views import MenViewSet
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/v1/menlist/', MenViewSet.as_view({'get': 'list'})),
+    path('api/v1/menlist/<int:pk>/', MenViewSet.as_view('put': 'update')),
+]
+
+Здесь в MenViewSet.as_view({'get': 'list'})
+'get' - какой метод будем использовать для обработки запроса
+'list' - метод который будет вызываться в самом вьюсете для обработки этого get запроса (весь список этих методов доступен в документации)
