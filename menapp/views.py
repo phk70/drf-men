@@ -8,11 +8,13 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, Re
 from .models import Men, Category
 from .serializers import MenSerializer
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
+    permission_classes: tuple = (IsAuthenticatedOrReadOnly,)  # Добавляем права IsAuthenticatedOrReadOnly  
 
 
 class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)

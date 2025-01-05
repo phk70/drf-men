@@ -5,9 +5,12 @@ from rest_framework.parsers import JSONParser
 import io
 
 
-class MenSerializer(serializers.ModelSerializer):
+class MenSerializer(serializers.ModelSerializer):  # Создаем класс  сериализатора который наследуем от базового класса
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())  # Добавляем автоматическое заполнение скрытого поля user именем текущего юзера
+
     class Meta:
-        model = Men
-        fields = ('title', 'content', 'cat')
-        # fields = __all__      Если хотим просто выводить все поля
+        model = Men  # Указываем модель
+        fields = '__all__'  # Выводим все поля
+        # fields = ('title', 'content', 'cat')  # Выведет поля title, content, cat
+        
 

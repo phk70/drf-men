@@ -344,6 +344,14 @@ def get_queryset(self):
 
 10. Ограничения доступа (permissions)
 
+В DRF 4 уровня
+AllowAny - полный доступ
+IsAuthenticated - только для авторизованных пользователей
+IsAdminUser - только для Администраторов
+IsAuthenticatedOrReadOnly - только авторизованным. Или всем, но только для чтения
+
+
+
 Добавим в нашу модель дополнительное поле, которое будет хранить идентификатор пользователя
 
 from django.contrib.auth.models import RetrieveUpdateDestroyAPIView
@@ -362,7 +370,7 @@ user = models.ForeignKey(User, verbose_name='Пользователь', on_delet
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView 
 
 
-class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи)
+class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи) и post запросов
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
 
@@ -394,3 +402,25 @@ urlpatterns = [
 
 
 
+Права определяются в представлениях.
+
+Установим права IsAuthenticatedOrReadOnly для class MenAPIList(ListCreateAPIView)
+
+
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+
+class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи)
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
+    permission_classes: tuple = (IsAuthenticatedOrReadOnly,)  # Добавляем права IsAuthenticatedOrReadOnly  
+
+
+И дописываем сериализатор, чтобы User заполнялся автоматически
+
+class MenSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())  # Добавляем автоматическое заполнение скрытого поля user именем текущего юзера
+
+    class Meta:
+        model = Men
+        fields = '__all__'  # Выводим все поля
