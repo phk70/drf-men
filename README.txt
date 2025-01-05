@@ -267,3 +267,46 @@ urlpatterns = [
 ]
 
 Благодаря одному вьюсету и роутеру у нас присутствуем весь функционал CRUD.
+
+
+
+**********************************************************************************************************
+
+9. Продолжение по Роутерам.
+Есть 2 основных класса для роутеров:
+
+SimpleRouter
+DefauilRouter
+
+Они практически идентичны. Только у DefaultRouter мы можем указать адрес http://127.0.0.1:8000/api/v1/ и он предложит перейти далее по men/  
+А SimpleRouter принципиально ждет http://127.0.0.1:8000/api/v1/men/  и на все остальные выдает ошибку
+
+
+Дополним функционал отдельным выводом списка категорий (по сути создадим новый маршрут .../men/category/)
+Используем декоратор @action в нашем вьюсете
+
+from rest_framework.response import Response
+from rest_framework.decorators import action
+
+
+class MenViewSet(ModelViewSet):  # Класс отвечающий за обработку get, post, patch и delete на основе базового класса ModelViewSet
+    queryset = Men.objects.all()  # Получаем список всех записей из БД
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+
+    @action(methods=['get'], detail=False)  # Добавляем декоратор для обработки get запросов. Detail=False - выводит все записи, Detail=True - выводит одну запись
+    def category(self, request):  # Метод отвечающий за вывод всех категорий записей
+        cats = Category.objects.all()  # Получаем список всех категорий
+        return Response({'cats': [cat.name for cat in cats]})  # Возвращаем имена категорий. Они доступны по адресу http://127.0.0.1:8000/api/v1/men/category/ 
+
+
+
+Для того, чтобы можно было нырять по категориям необходимо поменять флаг detail, дописать pk в выборке и вывод в return
+
+    @action(methods=['get'], detail=True)  # Добавляем декоратор для обработки get запросов. Detail=False - выводит все записи, Detail=True - выводит одну запись
+    def category(self, request, pk):  # Метод отвечающий за вывод всех категорий записей
+        cats = Category.objects.get(pk=pk)  # Получаем список всех категорий
+        return Response({'cats': cats.name})  # Возвращаем имя категории. 
+
+Номер категории ставится перед ее именем
+Теперь по GET запросу http://127.0.0.1:8000/api/v1/men/1/category/ обоюразится {'cats': 'Актеры'}
+А по запросу http://127.0.0.1:8000/api/v1/men/2/category/ отобразится {'cats': 'Певцы'}

@@ -5,7 +5,7 @@ from menapp.views import MenViewSet
 from rest_framework import routers
 
 
-router = routers.SimpleRouter()  # Создаем объект роутера для работы с маршрутами
+router = routers.DefaultRouter()  # Создаем объект роутера для работы с маршрутами
 router.register(r'men', MenViewSet)  # Регистрируем в нем наш класс вьюсета MenViewSet
 
 urlpatterns = [
