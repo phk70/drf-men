@@ -1,5 +1,5 @@
 from django.contrib import admin  # импортируем админку для управления БД
-from django.urls import include, path  # импортируем функцию path для создания маршрутов
+from django.urls import include, path, re_path  # импортируем функцию path для создания маршрутов
 
 from menapp.views import MenAPIList, MenAPIUpdate, MenAPIDestroy  # импортируем наши вьюсеты из нашего приложения
 # from rest_framework import routers
@@ -13,5 +13,7 @@ urlpatterns = [
     path('api/v1/drf-auth/', include('rest_framework.urls')),  # маршрут для авторизации
     path('api/v1/men/', MenAPIList.as_view()),  #  Маршрут для отображения всех записей
     path('api/v1/men/<int:pk>/', MenAPIUpdate.as_view()),  # Маршрут для изменения записей по идентификатору
-    path('api/v1/mendelete/<int:pk>/', MenAPIDestroy.as_view()),  # Маршрут для удаления записей по идентификатору      
+    path('api/v1/mendelete/<int:pk>/', MenAPIDestroy.as_view()),  # Маршрут для удаления записей по идентификатору
+    path('api/v1/auth/', include('djoser.urls')),  # маршрут для работы с токенами
+    re_path(r'^auth/', include('djoser.urls.authtoken')),  # маршрут для работы с токенами
 ]

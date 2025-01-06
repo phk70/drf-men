@@ -1,3 +1,4 @@
+from tokenize import Token
 from django.core.serializers import serialize  # Импортируем функцию serialize для преобразования модели в json
 from django.forms import model_to_dict  # Импортируем функцию model_to_dict 
 from django.shortcuts import render  # Импортируем функцию render 
@@ -9,7 +10,8 @@ from .models import Men, Category  # Импортируем модели из ф
 from .serializers import MenSerializer  # Импортируем сериализатор из файла serializers
 from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly  # Импортируем самописные права из файла permissions
 from rest_framework.decorators import action  # Импортируем декоратор action для работы с дополнительными маршрутами
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser  # Импортируем дополнительные права для работы с дополнительными маршрутами
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated  # Импортируем дополнительные права для работы с дополнительными маршрутами
+from rest_framework.authentication import TokenAuthentication
 
 
 class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи)
@@ -21,8 +23,8 @@ class MenAPIList(ListCreateAPIView):  # Класс отвечающий за о�
 class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
-    permission_classes = (IsAdminOrReadOnly, )  # Добавляем самописные права IsAdminOrReadOnly
-
+    permission_classes = (IsAuthenticated, )  # Добавляем права IsAuthenticated
+    # authentication_classes = (TokenAuthentication, )  # Добавляем дополнительно права TokenAuthentication
 
 class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий за delete запросы
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset

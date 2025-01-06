@@ -20,8 +20,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'menapp.apps.MenappConfig',
-    'rest_framework',
+    'menapp.apps.MenappConfig',  # Наше приложение
+    'rest_framework',  # Для работы с API
+    'rest_framework.authtoken',  # Для стандартной аутентификации по токенам
+    'djoser',  # Для аутентификации по токенам с помощью Djoser
 ]
 
 MIDDLEWARE = [
@@ -76,9 +78,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'Ru-ru'
+LANGUAGE_CODE = 'Ru-ru'  # Установка языка
 
-TIME_ZONE = 'Asia/Tomsk'
+TIME_ZONE = 'Asia/Tomsk'  # Установка временной зоны
 
 USE_I18N = True
 
@@ -95,6 +97,12 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ]    
+        'rest_framework.permissions.AllowAny',  # Даем доступ всем
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # Подключаем аутентификацию по токенам
+        'rest_framework.authentication.BasicAuthentication',  # Подключаем аутентификацию по логину и паролю (используется DRF по умолчанию)
+        'rest_framework.authentication.SessionAuthentication',  # Подключаем аутентификацию по сессиям (используется DRF по умолчанию)
+    ],
 }

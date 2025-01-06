@@ -496,11 +496,11 @@ REST_FRAMEWORK = {
 Из встроенных методов доступны:
 
 Session-based - аутентификация на основе сессии из cookies
-Token-based - аутентификация на основе токенов
+Token-based - аутентификация на основе токенов (библиотека Djoser)
 
 Из сторонних подгружаемых пакетов:
 
-JSON Web Token (JWT) authentication - аутентификация на основе JWT
+JSON Web Token (JWT) authentication - аутентификация на основе JWT (библиотека Simple JWT)
 Django REST framework OAuth - авторизация через социальные сериализатор
 И другие...
 
@@ -517,3 +517,85 @@ http://127.0.0.1:8000/api/v1/drf-auth/login/  --  нас перекинет ав
 http://127.0.0.1:8000/api/v1/drf-auth/logout/
 
 
+
+
+**********************************************************************************************************
+
+12. Аутентификация по токенам. Пакет Djoser
+
+Устанавливаем пакет Djoser
+pip install djoser
+
+
+Добавляем его в settings в установленные программы, а так же прописываем разрешение в библиотеки фреймворка на работу с токенами
+
+INSTALLED_APPS = [
+    .......
+
+    'rest_framework.authtoken',  # Для стандартной аутентификации по токенам
+    'djoser',  # Для аутентификации по токенам с помощью Djoser
+]
+
+
+REST_FRAMEWORK = {
+    ......
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # Подключаем аутентификацию по токенам
+        'rest_framework.authentication.BasicAuthentication',  # Подключаем аутентификацию по логину и паролю (используется DRF по умолчанию)
+        'rest_framework.authentication.SessionAuthentication',  # Подключаем аутентификацию по сессиям (используется DRF по умолчанию)
+    ],
+}
+
+
+Выполняем миграции
+
+python manage.py migrate
+
+
+Добавляем новые маршруты для аутентификации в urls
+
+from django.urls import include, path, re_path  # импортируем функцию path для создания маршрутов
+
+path('api/v1/auth/', include('djoser.urls')),  # маршрут для работы с токенами
+re_path(r'^auth/', include('djoser.urls.authtoken')),  # маршрут для работы с токенами
+
+
+
+Запускаем сервер и теперь по адресу http://127.0.0.1:8000/api/v1/auth/ нам доступна работа с users
+Здесь можно содавать новых и менять инфо и состояние текущих пользователей.
+
+Создадим нового в postman
+методом POST на адрес http://127.0.0.1:8000/api/v1/auth/users/
+Во вкладке Body и Form data:
+
+username: seconduser
+password: какой то свой пароль не менее 8 символов и бла бла бла....
+email: phk@gmail.com
+
+Если обновим страницу http://127.0.0.1:8000/api/v1/auth/users/ то увидим второго зарегистрированного пользователя
+
+Теперь авторизуемся в системе так же в postman по адресу http://127.0.0.1:8000/auth/token/login/ отправим POST запрос
+Так же во вкладке Body и Form data:
+
+username: seconduser
+password: какой то свой пароль этого пользователя
+
+После отправки нам выдадут токен и он будет записан в БД именно для этого пользователя.
+
+Теперь для входа в headers сайта необходдимо отправлять этот токен.
+Если разлогиниться (так же с участием токена в хедере), то токен стирается из БД и войти с ним уже не получится.
+Нужно будет заново отправлять логин и пароль, чтобы получить новый токен.
+
+Так же можно дополнительно ограничивать доступы по токенам.
+например
+
+from rest_framework.authentication import TokenAuthentication
+
+class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
+    queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
+    serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
+    permission_classes = (IsAuthenticated, )  # Добавляем права IsAuthenticated
+    authentication_classes = (TokenAuthentication, )  # Добавляем дополнительно права TokenAuthentication
+
+Здесь дополнительно введена проверка токена. И даже если мы просто авторизовались по сессии, то данные нам не предоставят, т.к. мы не ввели токен.
