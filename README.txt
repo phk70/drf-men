@@ -605,7 +605,7 @@ class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий з
 
 **********************************************************************************************************
 
-13. Авторизация по JWT-токенам
+13. Авторизация по JWT-токенам ОБЩАЯ ИНФА
 
 JWT токены состоят из частей разделенных точкой
 -Header - Заголовок (json с указанным алгоритмом шифрования и типом токена). Кодируется алгоритмом base64
@@ -621,3 +621,86 @@ refresh_token записывается в БД и используется дл�
 
 Т.е на сервер каждые 5-10 минут отправляется запрос и обновляются токены авторизации.
 При выходе юзера из учетки и при повторном вводе пароля и логина все повторяется, все токены выдаются новые и по кургу.
+
+
+
+
+**********************************************************************************************************
+
+14. Авторизация по JWT-токенам
+
+Установка библиотеки SimpleJWT
+
+pip install djangorestframework-simplejwt
+
+Добавляем в библиотеку REST_FRAMEWORK
+
+'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # Подключаем аутентификацию по JWT токенам
+        .....
+    ],
+
+Добавляем новые маршруты в urls
+
+    path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # маршрут для получения токена
+    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # маршрут для обновления токена
+    path('api/v1/token/verify/', TokenVerifyView.as_view(), name='token_verify'),  # маршрут для проверки токена
+
+С официального сайта https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html копируем настройки
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": False,
+
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": None,
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JSON_ENCODER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+
+    "JTI_CLAIM": "jti",
+
+    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+
+    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+    "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
+    "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
+    "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
+    "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
+    "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
+}
+
+
+Переходим по адресу http://127.0.0.1:8000/api/v1/token/
+Вводим наши логин и пароль и в ответ получаем access и refresh токены
+
+
+Теперь пробуем в postman отправить get запрос и получить какую либо запись. Нам ее не дадут.
+Переходим во вкладку Header и прописываем
+Authorization -> Bearer НАШ_ACCESS_ТОКЕН
+Теперь по запросу данные будут предоставлены.
+
+Через какое то время (установленное в настройках. В нашем случеа 5 минут) нам так же откажут в доступе и напишут что токен устарел.
+
+Переходим по адресу http://127.0.0.1:8000/api/v1/token/refresh/ и вставляем наш refresh_token и получаем новый access токен.
+Теперь вставив его в header при запросе нам снова дадут доступ на период жизни access токена.

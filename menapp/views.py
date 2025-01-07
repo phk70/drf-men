@@ -2,7 +2,6 @@ from tokenize import Token
 from django.core.serializers import serialize  # Импортируем функцию serialize для преобразования модели в json
 from django.forms import model_to_dict  # Импортируем функцию model_to_dict 
 from django.shortcuts import render  # Импортируем функцию render 
-
 from rest_framework.response import Response  # Импортируем функцию Response для
 from rest_framework.viewsets import ModelViewSet  # Импортируем класс ModelViewSet
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView  # Импортируем функции для работы с сериализаторами  
@@ -24,7 +23,7 @@ class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий з
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать
     permission_classes = (IsAuthenticated, )  # Добавляем права IsAuthenticated
-    # authentication_classes = (TokenAuthentication, )  # Добавляем дополнительно права TokenAuthentication
+    # authentication_classes = (TokenAuthentication, )  # Добавляем дополнительно права TokenAuthentication комментим, чтобы иметь возможность работать именно с JWT токенами
 
 class MenAPIDestroy(RetrieveDestroyAPIView):  # Класс отвечающий за delete запросы
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset

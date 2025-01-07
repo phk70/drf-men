@@ -1,7 +1,7 @@
 from django.contrib import admin  # импортируем админку для управления БД
 from django.urls import include, path, re_path  # импортируем функцию path для создания маршрутов
-
 from menapp.views import MenAPIList, MenAPIUpdate, MenAPIDestroy  # импортируем наши вьюсеты из нашего приложения
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView  # импортируем наши вьюсеты из библиотеки rest_framework_simplejwt
 # from rest_framework import routers
 
 
@@ -16,4 +16,7 @@ urlpatterns = [
     path('api/v1/mendelete/<int:pk>/', MenAPIDestroy.as_view()),  # Маршрут для удаления записей по идентификатору
     path('api/v1/auth/', include('djoser.urls')),  # маршрут для работы с токенами
     re_path(r'^auth/', include('djoser.urls.authtoken')),  # маршрут для работы с токенами
+    path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # маршрут для получения токена
+    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # маршрут для обновления токена
+    path('api/v1/token/verify/', TokenVerifyView.as_view(), name='token_verify'),  # маршрут для проверки токена
 ]
