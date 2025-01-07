@@ -1,23 +1,29 @@
-from tokenize import Token
+from tokenize import Token  
 from django.core.serializers import serialize  # Импортируем функцию serialize для преобразования модели в json
 from django.forms import model_to_dict  # Импортируем функцию model_to_dict 
 from django.shortcuts import render  # Импортируем функцию render 
 from rest_framework.response import Response  # Импортируем функцию Response для
 from rest_framework.viewsets import ModelViewSet  # Импортируем класс ModelViewSet
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView  # Импортируем функции для работы с сериализаторами  
+from rest_framework.decorators import action  # Импортируем декоратор action для работы с дополнительными маршрутами
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated  # Импортируем дополнительные права для работы с дополнительными маршрутами
+from rest_framework.authentication import TokenAuthentication  # Импортируем класс для работы с токенами
+from rest_framework.pagination import PageNumberPagination  # Импортируем класс для работы с пагинацией
 from .models import Men, Category  # Импортируем модели из файла models
 from .serializers import MenSerializer  # Импортируем сериализатор из файла serializers
 from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly  # Импортируем самописные права из файла permissions
-from rest_framework.decorators import action  # Импортируем декоратор action для работы с дополнительными маршрутами
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated  # Импортируем дополнительные права для работы с дополнительными маршрутами
-from rest_framework.authentication import TokenAuthentication
 
+
+class MenAPIListPagination(PageNumberPagination):  # Класс отвечающий за обработку get (возвращает записи)
+    page_size = 4  # Устанавливаем количество элементов на одной странице
+    page_size_query_param = 'page_size'  # Для пользовательской устанавки количества элементов на одной странице
+    max_page_size = 100  # Устанавливаем максимальное количество элементов на странице
 
 class MenAPIList(ListCreateAPIView):  # Класс отвечающий за обработку get (возвращает записи)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
     serializer_class = MenSerializer  # Указываем какой сериализатор будем использовать  
     permission_classes= (IsAuthenticatedOrReadOnly, )  # Добавляем права IsAuthenticatedOrReadOnly  
-
+    pagination_class = MenAPIListPagination  # Добавляем класс пагинации
 
 class MenAPIUpdate(RetrieveUpdateAPIView):  # Класс отвечающий за обработку put и patch (изменение записей в БД)
     queryset = Men.objects.all()  # Получаем список всех записей из БД и помещаем их в переменную queryset
